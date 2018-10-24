@@ -5,6 +5,7 @@ import android.provider.BaseColumns;
 public final class BibliotecaContract {
     public final class Livro implements BaseColumns {
         public final static String TABLE_NAME = "Livro";
+        public static final String COLUMN_NAME_ID = "_ID";
         public final static String COLUMN_NAME_TITULO = "titulo";
         public static final String COLUMN_NAME_AUTOR = "autor";
         public static final String COLUMN_NAME_ANO = "ano";

@@ -10,6 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import java.util.Random;
 
@@ -29,9 +30,41 @@ public class MainActivity extends AppCompatActivity {
         rclLivros = (RecyclerView) findViewById(R.id.rclLivros);
         rclLivros.setLayoutManager(new LinearLayoutManager(this));
 
-        adapter = new LivroAdapter(getCursorLivrosPos1950());
-        rclLivros.setAdapter(adapter);
 
+        adapter = new LivroAdapter(getCursorLivrosPos1950());
+        adapter.setOnLivroClickListener(new LivroAdapter.OnLivroClickListener() {
+            @Override
+            public void onLivroClick(View livroView, int position) {
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                String select = BibliotecaContract.Livro.COLUMN_NAME_TITULO+" = ?";
+                ContentValues values = new ContentValues();
+                TextView txtTitulo = (TextView) livroView.findViewById(R.id.txt_livro_titulo);
+                String[] selectParam = {txtTitulo.getText().toString()};
+                values.put(BibliotecaContract.Livro.COLUMN_NAME_ANO, 2018);
+
+                int numUp = db.update(BibliotecaContract.Livro.TABLE_NAME, values,select,selectParam);
+                Log.i("DBINFO", "UPDATE "+numUp+" ano: " + txtTitulo.getText().toString());
+                adapter.setCursor(getCursorLivrosPos1950());
+                adapter.notifyDataSetChanged();
+
+            }
+        });
+        adapter.setOnLivroLongClickListener(new LivroAdapter.OnLivroLongClickListener() {
+            @Override
+            public void onLivroLongClick(View livroView, int position) {
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                String select = BibliotecaContract.Livro.COLUMN_NAME_TITULO+" = ?";
+                TextView txtTitulo = (TextView) livroView.findViewById(R.id.txt_livro_titulo);
+
+                String[] selectArgs = {txtTitulo.getText().toString()};
+                db.delete(BibliotecaContract.Livro.TABLE_NAME,select,selectArgs);
+                Log.i("DBINFO", "DEL titulo: " + txtTitulo.getText().toString());
+                adapter.setCursor(getCursorLivrosPos1950());
+                adapter.notifyItemRemoved(position);
+
+            }
+        });
+        rclLivros.setAdapter(adapter);
 
 
 
@@ -48,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
                 long id = db.insert(BibliotecaContract.Livro.TABLE_NAME,null, valores);
                 Log.i("DBINFO", "registro criado com id: "+id);
                 adapter.setCursor(getCursorLivrosPos1950());
+                adapter.notifyDataSetChanged();
             }
         });
         btnListar = (Button) findViewById(R.id.btnListar);

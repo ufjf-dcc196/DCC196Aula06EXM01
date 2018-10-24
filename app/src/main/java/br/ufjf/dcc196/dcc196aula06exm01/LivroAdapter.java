@@ -11,13 +11,30 @@ import android.widget.TextView;
 
 class LivroAdapter extends RecyclerView.Adapter<LivroAdapter.ViewHolder>{
     private Cursor cursor;
+    private OnLivroClickListener listener;
+    private OnLivroLongClickListener longListener;
+
+    public interface OnLivroClickListener {
+        void onLivroClick(View livroView, int position);
+    }
+    public interface OnLivroLongClickListener {
+        void onLivroLongClick(View livroView, int position);
+    }
+
+    public void setOnLivroClickListener(OnLivroClickListener listener){
+        this.listener = listener;
+    }
+    public void setOnLivroLongClickListener(OnLivroLongClickListener listener){
+        this.longListener = listener;
+    }
+
     public LivroAdapter(Cursor c){
         cursor = c;
     }
 
     public void setCursor(Cursor c){
         cursor = c;
-        notifyDataSetChanged();
+        //notifyDataSetChanged();
     }
     @NonNull
     @Override
@@ -45,16 +62,61 @@ class LivroAdapter extends RecyclerView.Adapter<LivroAdapter.ViewHolder>{
         return cursor.getCount();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder{
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         public TextView txtTitulo;
         public TextView txtAutor;
         public TextView txtAno;
 
-        public ViewHolder(View itemView) {
+        public ViewHolder(final View itemView) {
             super(itemView);
             txtTitulo = itemView.findViewById(R.id.txt_livro_titulo);
             txtAutor = itemView.findViewById(R.id.txt_livro_autor);
             txtAno = itemView.findViewById(R.id.txt_livro_ano);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(listener!=null){
+                        int position = getAdapterPosition();
+                        if(position!=RecyclerView.NO_POSITION){
+                            listener.onLivroClick(itemView, position);
+                        }
+                    }
+                }
+            });
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if(longListener!=null){
+                        int position = getAdapterPosition();
+                        if(position!=RecyclerView.NO_POSITION){
+                            longListener.onLivroLongClick(itemView, position);
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            });
+        }
+
+        @Override
+        public void onClick(View v) {
+            if(listener!=null){
+                int position = getAdapterPosition();
+                if(position != RecyclerView.NO_POSITION){
+                    listener.onLivroClick(v, position);
+                }
+            }
+        }
+        @Override
+        public boolean onLongClick(View v) {
+            if(longListener!=null){
+                int position = getAdapterPosition();
+                if(position != RecyclerView.NO_POSITION){
+                    longListener.onLivroLongClick(v, position);
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
